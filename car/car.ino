@@ -24,36 +24,39 @@ void xunji() {
   }
 }
 
+const int DelayTime = 100;
+const int BiZhangDelayTime = DelayTime / 4;
+
 void bizhang() {
   if (digitalRead(11) == 0 && digitalRead(12) == 0) {
     Serial.println("left right obstacle");
     stop();
-    delay(100);
+    delay(BiZhangDelayTime);
     back();
-    delay(200);
+    delay(BiZhangDelayTime * 2);
     left();
-    delay(200);
+    delay(BiZhangDelayTime * 2);
 
   } else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
     Serial.println("right obstacle");
     stop();
-    delay(100);
+    delay(BiZhangDelayTime);
     back();
-    delay(200);
+    delay(BiZhangDelayTime*2);
     left();
-    delay(200);
+    delay(BiZhangDelayTime*2);
   } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
     Serial.println("left obstacle");
     stop();
-    delay(100);
+    delay(BiZhangDelayTime);
     back();
-    delay(200);
+    delay(BiZhangDelayTime*2);
     right();
-    delay(200);
+    delay(BiZhangDelayTime*2);
   } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
     Serial.println("no obstacle");
     go();
-    delay(200);
+    delay(BiZhangDelayTime*2);
   }
 }
 
@@ -118,6 +121,44 @@ void csb() {
   }
 }
 
+const int ObstacleDistance = 20;
+
+void BiZhangWithCsb()
+{
+  int csbDistance = checkdistance_2_3();
+  if ((digitalRead(11) == 0 && digitalRead(12) == 0) || csbDistance <= ObstacleDistance)
+  {
+    Serial.println("left right obstacle");
+    stop();
+    delay(BiZhangDelayTime);
+    back();
+    delay(BiZhangDelayTime * 2);
+    left();
+    delay(BiZhangDelayTime * 2);
+  } 
+  else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
+    Serial.println("right obstacle");
+    stop();
+    delay(BiZhangDelayTime);
+    back();
+    delay(BiZhangDelayTime*2);
+    left();
+    delay(BiZhangDelayTime*2);
+  } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
+    Serial.println("left obstacle");
+    stop();
+    delay(BiZhangDelayTime);
+    back();
+    delay(BiZhangDelayTime*2);
+    right();
+    delay(BiZhangDelayTime*2);
+  } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
+    Serial.println("no obstacle");
+    go();
+    delay(BiZhangDelayTime*2);
+  }
+}
+
 void mfs() {
   if (checkdistance_2_3() < 6) {
     back();
@@ -155,8 +196,8 @@ void setup(){
 }
 
 long ir_item = -1;
-const int DelayTime = 100;
 
+const int stepAngle = 30;
 
 void loop(){
     long curMode = -1;
@@ -171,6 +212,10 @@ void loop(){
         ir_item = IrReceiver.decodedIRData.command;
         curMode = ir_item;
         IrReceiver.resume(); // Enable receiving of the next value
+
+        Serial.print("command:");
+        Serial.println(ir_item, HEX);
+        Serial.println();
       }
     }
 
@@ -210,27 +255,63 @@ void loop(){
         stop();
         delay(DelayTime);
       } 
+      else if (ir_item == 0x40) // 5
+      {
+        stop();
+        int currentAngle = servo_9.read();
+        int nextAngle = currentAngle + stepAngle;
+        if (nextAngle >= 180)
+        {
+          nextAngle = 180;
+        }
+        servo_9.write(nextAngle);
+        delay(1000);
+      }
+      else if (ir_item == 0x43) // 6
+      {
+        stop();
+        int currentAngle = servo_9.read();
+        int nextAngle = currentAngle - stepAngle;
+        if (nextAngle <= 0)
+        {
+          nextAngle = 0;
+        }
+        servo_9.write(nextAngle);
+        delay(1000);
+      }
     }
     else
     {
-      if (ir_item == 0x45) 
+      if (ir_item == 0x45) // 1
       {
         Serial.println("xunji");
         xunji();
       } 
-      else if (ir_item == 0x46) 
+      else if (ir_item == 0x46) // 2
       {
         Serial.println("bizhang");
         bizhang();
       } 
-      else if (ir_item == 0x47) 
+      else if (ir_item == 0x47) // 3
       {
         Serial.println("csb");
         csb();
       }
-      else if (ir_item == 0x44) 
+      else if (ir_item == 0x44) //4
       {
         mfs();
+      }
+      else if (ir_item == 0x7) // 7
+      {
+        BiZhangWithCsb();
+      }
+      else if (ir_item == 0x15) // 8
+      {
+        
+      }
+      else if (ir_item == 0x9) // 9
+      {
+        
       }
     }
     
