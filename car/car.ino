@@ -11,39 +11,36 @@
 
 Servo servo_9;
 
-
-void back() {
-  digitalWrite(4,LOW);
-  digitalWrite(5,HIGH);
-  digitalWrite(6,LOW);
-  digitalWrite(7,HIGH);
-}
-
 void bizhang() {
   if (digitalRead(11) == 0 && digitalRead(12) == 0) {
+    Serial.println("left right obstacle");
     stop();
-    delay(200);
+    delay(100);
     back();
-    delay(300);
+    delay(200);
     left();
-    delay(300);
+    delay(200);
 
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 0) {
+  } else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
+    Serial.println("right obstacle");
     stop();
-    delay(200);
+    delay(100);
     back();
-    delay(300);
+    delay(200);
     left();
-    delay(300);
-  } else if (digitalRead(A2) == 0 && digitalRead(A1) == 1) {
-    stop();
     delay(200);
+  } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
+    Serial.println("left obstacle");
+    stop();
+    delay(100);
     back();
-    delay(300);
+    delay(200);
     right();
-    delay(300);
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 1) {
+    delay(200);
+  } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
+    Serial.println("no obstacle");
     go();
+    delay(200);
   }
 }
 
@@ -81,10 +78,32 @@ void go() {
 
 void left() {
   digitalWrite(4,LOW);
+  digitalWrite(5,LOW);
+  digitalWrite(6,LOW);
+  digitalWrite(7,HIGH);
+}
+
+void right() {
+  digitalWrite(4,LOW);
   digitalWrite(5,HIGH);
   digitalWrite(6,LOW);
   digitalWrite(7,LOW);
 }
+
+void stop() {
+  digitalWrite(4,LOW);
+  digitalWrite(5,LOW);
+  digitalWrite(6,LOW);
+  digitalWrite(7,LOW);
+}
+
+void back() {
+  digitalWrite(4,LOW);
+  digitalWrite(5,HIGH);
+  digitalWrite(6,LOW);
+  digitalWrite(7,HIGH);
+}
+
 
 void mfs() {
   if (checkdistance_2_3() < 6) {
@@ -95,20 +114,6 @@ void mfs() {
   } else if (checkdistance_2_3() > 12) {
     stop();
   }
-}
-
-void right() {
-  digitalWrite(4,LOW);
-  digitalWrite(5,LOW);
-  digitalWrite(6,LOW);
-  digitalWrite(7,HIGH);
-}
-
-void stop() {
-  digitalWrite(4,HIGH);
-  digitalWrite(5,LOW);
-  digitalWrite(6,HIGH);
-  digitalWrite(7,LOW);
 }
 
 void xunji() {
@@ -143,83 +148,90 @@ void setup(){
   pinMode(12, INPUT);
   pinMode(2, OUTPUT);
   pinMode(3, INPUT);
-  
+
+  servo_9.attach(csb_pin);
+  servo_9.write(90);
+  delay(1000);
 }
 
 long ir_item = -1;
 const int DelayTime = 100;
 
+
 void loop(){
-  if (IrReceiver.decode()) {
-    // Print a short summary of received data
-      //IrReceiver.printIRResultShort(&Serial);
-      //IrReceiver.printIRSendUsage(&Serial);
-      if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
-          Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
-          // We have an unknown protocol here, print more info
-          //IrReceiver.printIRResultRawFormatted(&Serial, true);
-          IrReceiver.resume(); // Enable receiving of the next value
-          return;
+    long curMode = -1;
+    if (IrReceiver.decode()) 
+    {
+      if (IrReceiver.decodedIRData.protocol == UNKNOWN) 
+      {
+          IrReceiver.resume();
       }
-      Serial.print("command:");
-      Serial.println(IrReceiver.decodedIRData.command, HEX);
-      Serial.println();
-
-      ir_item = IrReceiver.decodedIRData.command;
-              /*
-       * !!!Important!!! Enable receiving of the next value,
-       * since receiving has stopped after the end of the current received data packet.
-       */
-      IrReceiver.resume(); // Enable receiving of the next value
-        
-    if (ir_item == 0x18) {
-      Serial.println("go");
-      go();
-      delay(DelayTime);
-      stop();
-    } else if (ir_item == 0x52) {
-      Serial.println("back");
-      back();
-      delay(DelayTime);
-      stop();
-    } else if (ir_item == 0x8) {
-      Serial.println("left");
-      left();
-      delay(DelayTime);
-      stop();
-    } else if (ir_item == 0x5A) {
-      Serial.println("right");
-      right();
-      delay(DelayTime);
-      stop();
-    } else if (ir_item == 0x1C) {
-      Serial.println("stop");
-      stop();
-      delay(DelayTime);
-    } else if (ir_item == 0x45) {
-      Serial.println("xunji");
-      xunji();
-    } else if (ir_item == 0x46) {
-      Serial.println("bizhang");
-      bizhang();
-    } else if (ir_item == 0x47) {
-      Serial.println("csb");
-      servo_9.attach(csb_pin);
-      servo_9.write(90);
-      delay(1000);
-      csb();
-      delay(10000);
-      servo_9.detach();
-    } else if (ir_item == 0x44) {
-      Serial.println("mfs");
-      servo_9.attach(csb_pin);
-      servo_9.write(90);
-      delay(1000);
-      mfs();
-      delay(10000);
-      servo_9.detach();
+      else
+      {
+        ir_item = IrReceiver.decodedIRData.command;
+        curMode = ir_item;
+        IrReceiver.resume(); // Enable receiving of the next value
+      }
     }
-  } else {
-  }
 
+    if (curMode > 0)
+    {
+      if (ir_item == 0x18) 
+      {
+          Serial.println("go");
+          go();
+          delay(DelayTime);
+          stop();
+      } 
+      else if (ir_item == 0x52) 
+      {
+        Serial.println("back");
+        back();
+        delay(DelayTime);
+        stop();
+      } 
+      else if (ir_item == 0x8) 
+      {
+        Serial.println("left");
+        left();
+        delay(DelayTime);
+        stop();
+      } 
+      else if (ir_item == 0x5A) 
+      {
+        Serial.println("right");
+        right();
+        delay(DelayTime);
+        stop();
+      } 
+      else if (ir_item == 0x1C) 
+      {
+        Serial.println("stop");
+        stop();
+        delay(DelayTime);
+      } 
+    }
+    else
+    {
+      if (ir_item == 0x45) 
+      {
+        Serial.println("xunji");
+        xunji();
+      } 
+      else if (ir_item == 0x46) 
+      {
+        Serial.println("bizhang");
+        bizhang();
+      } 
+      else if (ir_item == 0x47) 
+      {
+        Serial.println("csb");
+        csb();
+      }
+      else if (ir_item == 0x44) 
+      {
+        mfs();
+      }
+    }
+    
 }
