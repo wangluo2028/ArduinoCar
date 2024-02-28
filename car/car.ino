@@ -11,6 +11,19 @@
 
 Servo servo_9;
 
+void xunji() {
+  if (digitalRead(A2) == 0 && digitalRead(A1) == 0) {
+    stop();
+
+  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 0) {
+    left();
+  } else if (digitalRead(A2) == 0 && digitalRead(A1) == 1) {
+    right();
+  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 1) {
+    go();
+  }
+}
+
 void bizhang() {
   if (digitalRead(11) == 0 && digitalRead(12) == 0) {
     Serial.println("left right obstacle");
@@ -44,30 +57,6 @@ void bizhang() {
   }
 }
 
-float checkdistance_2_3() {
-  digitalWrite(2, LOW);
-  delayMicroseconds(2);
-  digitalWrite(2, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(2, LOW);
-  float distance = pulseIn(3, HIGH) / 58.00;
-  delay(10);
-  return distance;
-}
-
-void csb() {
-  if (checkdistance_2_3() > 15) {
-    go();
-
-  } else if (checkdistance_2_3() <= 15) {
-    stop();
-    delay(200);
-    back();
-    delay(200);
-    left();
-    delay(200);
-  }
-}
 
 void go() {
   digitalWrite(4,HIGH);
@@ -104,6 +93,30 @@ void back() {
   digitalWrite(7,HIGH);
 }
 
+float checkdistance_2_3() {
+  digitalWrite(2, LOW);
+  delayMicroseconds(2);
+  digitalWrite(2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(2, LOW);
+  float distance = pulseIn(3, HIGH) / 58.00;
+  delay(10);
+  return distance;
+}
+
+void csb() {
+  if (checkdistance_2_3() > 15) {
+    go();
+
+  } else if (checkdistance_2_3() <= 15) {
+    stop();
+    delay(200);
+    back();
+    delay(200);
+    left();
+    delay(200);
+  }
+}
 
 void mfs() {
   if (checkdistance_2_3() < 6) {
@@ -113,19 +126,6 @@ void mfs() {
     go();
   } else if (checkdistance_2_3() > 12) {
     stop();
-  }
-}
-
-void xunji() {
-  if (digitalRead(A2) == 0 && digitalRead(A1) == 0) {
-    stop();
-
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 0) {
-    left();
-  } else if (digitalRead(A2) == 0 && digitalRead(A1) == 1) {
-    right();
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 1) {
-    go();
   }
 }
 
