@@ -25,7 +25,15 @@ void xunji() {
 }
 
 const int DelayTime = 100;
-const int BiZhangDelayTime = DelayTime / 4;
+const int BiZhangDelayTime = DelayTime / 10;
+
+long ir_item = -1;
+
+const int stepAngle = 30;
+
+const int ObstacleDistance = 20;
+
+const int checkAngle = 10;
 
 void bizhang() {
   if (digitalRead(11) == 0 && digitalRead(12) == 0) {
@@ -60,6 +68,19 @@ void bizhang() {
   }
 }
 
+void ServoTurnAngle(const Servo& servo_9, int angle)
+{
+  stop();
+  delay(DelayTime);
+  int currentAngle = servo_9.read();
+  int nextAngle = currentAngle + angle;
+  if (nextAngle >= 180)
+  {
+    nextAngle = 180;
+  }
+  servo_9.write(nextAngle);
+  delay(1000);
+}
 
 void go() {
   digitalWrite(4,HIGH);
@@ -121,8 +142,6 @@ void csb() {
   }
 }
 
-const int ObstacleDistance = 20;
-
 void BiZhangWithCsb()
 {
   int csbDistance = checkdistance_2_3();
@@ -131,31 +150,27 @@ void BiZhangWithCsb()
     Serial.println("left right obstacle");
     stop();
     delay(BiZhangDelayTime);
-    back();
-    delay(BiZhangDelayTime * 2);
+//    back();
+//    delay(BiZhangDelayTime);
     left();
-    delay(BiZhangDelayTime * 2);
+    delay(BiZhangDelayTime);
   } 
   else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
     Serial.println("right obstacle");
     stop();
     delay(BiZhangDelayTime);
-    back();
-    delay(BiZhangDelayTime*2);
     left();
-    delay(BiZhangDelayTime*2);
+    delay(BiZhangDelayTime);
   } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
     Serial.println("left obstacle");
     stop();
     delay(BiZhangDelayTime);
-    back();
-    delay(BiZhangDelayTime*2);
     right();
-    delay(BiZhangDelayTime*2);
+    delay(BiZhangDelayTime);
   } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
     Serial.println("no obstacle");
     go();
-    delay(BiZhangDelayTime*2);
+    delay(BiZhangDelayTime);
   }
 }
 
@@ -195,9 +210,6 @@ void setup(){
   delay(1000);
 }
 
-long ir_item = -1;
-
-const int stepAngle = 30;
 
 void loop(){
     long curMode = -1;
@@ -257,27 +269,11 @@ void loop(){
       } 
       else if (ir_item == 0x40) // 5
       {
-        stop();
-        int currentAngle = servo_9.read();
-        int nextAngle = currentAngle + stepAngle;
-        if (nextAngle >= 180)
-        {
-          nextAngle = 180;
-        }
-        servo_9.write(nextAngle);
-        delay(1000);
+        ServoTurnAngle(stepAngle);
       }
       else if (ir_item == 0x43) // 6
       {
-        stop();
-        int currentAngle = servo_9.read();
-        int nextAngle = currentAngle - stepAngle;
-        if (nextAngle <= 0)
-        {
-          nextAngle = 0;
-        }
-        servo_9.write(nextAngle);
-        delay(1000);
+        ServoTurnAngle(-stepAngle);
       }
     }
     else
