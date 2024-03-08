@@ -7,22 +7,9 @@
 
 #include <Servo.h>
 
-
-
 Servo servo_9;
 
-void xunji() {
-  if (digitalRead(A2) == 0 && digitalRead(A1) == 0) {
-    stop();
 
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 0) {
-    left();
-  } else if (digitalRead(A2) == 0 && digitalRead(A1) == 1) {
-    right();
-  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 1) {
-    go();
-  }
-}
 
 const int DelayTime = 100;
 const int BiZhangDelayTime = DelayTime / 10;
@@ -35,8 +22,13 @@ const int ObstacleDistance = 20;
 
 const int checkAngle = 10;
 
+const int LeftCheckPin = 11;
+const int RightCheckPin = 12;
+const int HumanDetectPin = 13;
+
+
 void bizhang() {
-  if (digitalRead(11) == 0 && digitalRead(12) == 0) {
+  if (digitalRead(LeftCheckPin) == 0 && digitalRead(RightCheckPin) == 0) {
     Serial.println("left right obstacle");
     stop();
     delay(BiZhangDelayTime);
@@ -45,7 +37,7 @@ void bizhang() {
     left();
     delay(BiZhangDelayTime * 2);
 
-  } else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
+  } else if (digitalRead(LeftCheckPin) == 1 && digitalRead(RightCheckPin) == 0) {
     Serial.println("right obstacle");
     stop();
     delay(BiZhangDelayTime);
@@ -53,7 +45,7 @@ void bizhang() {
     delay(BiZhangDelayTime*2);
     left();
     delay(BiZhangDelayTime*2);
-  } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
+  } else if (digitalRead(LeftCheckPin) == 0 && digitalRead(RightCheckPin) == 1) {
     Serial.println("left obstacle");
     stop();
     delay(BiZhangDelayTime);
@@ -61,24 +53,24 @@ void bizhang() {
     delay(BiZhangDelayTime*2);
     right();
     delay(BiZhangDelayTime*2);
-  } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
+  } else if (digitalRead(LeftCheckPin) == 1 && digitalRead(RightCheckPin) == 1) {
     Serial.println("no obstacle");
     go();
     delay(BiZhangDelayTime*2);
   }
 }
 
-void ServoTurnAngle(const Servo& servo_9, int angle)
+void ServoTurnAngle(Servo& servo, int angle)
 {
   stop();
   delay(DelayTime);
-  int currentAngle = servo_9.read();
+  int currentAngle = servo.read();
   int nextAngle = currentAngle + angle;
   if (nextAngle >= 180)
   {
     nextAngle = 180;
   }
-  servo_9.write(nextAngle);
+  servo.write(nextAngle);
   delay(1000);
 }
 
@@ -145,7 +137,7 @@ void csb() {
 void BiZhangWithCsb()
 {
   int csbDistance = checkdistance_2_3();
-  if ((digitalRead(11) == 0 && digitalRead(12) == 0) || csbDistance <= ObstacleDistance)
+  if ((digitalRead(LeftCheckPin) == 0 && digitalRead(RightCheckPin) == 0) || csbDistance <= ObstacleDistance)
   {
     Serial.println("left right obstacle");
     stop();
@@ -155,22 +147,35 @@ void BiZhangWithCsb()
     left();
     delay(BiZhangDelayTime);
   } 
-  else if (digitalRead(11) == 1 && digitalRead(12) == 0) {
+  else if (digitalRead(LeftCheckPin) == 1 && digitalRead(RightCheckPin) == 0) {
     Serial.println("right obstacle");
     stop();
     delay(BiZhangDelayTime);
     left();
     delay(BiZhangDelayTime);
-  } else if (digitalRead(11) == 0 && digitalRead(12) == 1) {
+  } else if (digitalRead(LeftCheckPin) == 0 && digitalRead(RightCheckPin) == 1) {
     Serial.println("left obstacle");
     stop();
     delay(BiZhangDelayTime);
     right();
     delay(BiZhangDelayTime);
-  } else if (digitalRead(11) == 1 && digitalRead(12) == 1) {
+  } else if (digitalRead(LeftCheckPin) == 1 && digitalRead(RightCheckPin) == 1) {
     Serial.println("no obstacle");
     go();
     delay(BiZhangDelayTime);
+  }
+}
+
+void xunji() {
+  if (digitalRead(A2) == 0 && digitalRead(A1) == 0) {
+    stop();
+
+  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 0) {
+    left();
+  } else if (digitalRead(A2) == 0 && digitalRead(A1) == 1) {
+    right();
+  } else if (digitalRead(A2) == 1 && digitalRead(A1) == 1) {
+    go();
   }
 }
 
@@ -200,8 +205,8 @@ void setup(){
   pinMode(A2, INPUT);
   pinMode(A1, INPUT);
 
-  pinMode(11, INPUT);
-  pinMode(12, INPUT);
+  pinMode(LeftCheckPin, INPUT);
+  pinMode(RightCheckPin, INPUT);
   pinMode(2, OUTPUT);
   pinMode(3, INPUT);
 
@@ -269,11 +274,11 @@ void loop(){
       } 
       else if (ir_item == 0x40) // 5
       {
-        ServoTurnAngle(stepAngle);
+        ServoTurnAngle(servo_9, stepAngle);
       }
       else if (ir_item == 0x43) // 6
       {
-        ServoTurnAngle(-stepAngle);
+        ServoTurnAngle(servo_9, -stepAngle);
       }
     }
     else
