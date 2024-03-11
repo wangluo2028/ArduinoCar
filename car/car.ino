@@ -25,7 +25,11 @@ const int checkAngle = 10;
 const int LeftCheckPin = 11;
 const int RightCheckPin = 12;
 const int HumanDetectPin = 13;
+const int ServoDuoJiPin = 9;
+const int ChaoShengBoOutputPin = 2;
+const int ChaoShengBoInputPin = 3;
 
+#define IRemotePin A0
 
 void bizhang() {
   if (digitalRead(LeftCheckPin) == 0 && digitalRead(RightCheckPin) == 0) {
@@ -110,12 +114,12 @@ void back() {
 }
 
 float checkdistance_2_3() {
-  digitalWrite(2, LOW);
+  digitalWrite(ChaoShengBoOutputPin, LOW);
   delayMicroseconds(2);
-  digitalWrite(2, HIGH);
+  digitalWrite(ChaoShengBoOutputPin, HIGH);
   delayMicroseconds(10);
-  digitalWrite(2, LOW);
-  float distance = pulseIn(3, HIGH) / 58.00;
+  digitalWrite(ChaoShengBoOutputPin, LOW);
+  float distance = pulseIn(ChaoShengBoInputPin, HIGH) / 58.00;
   delay(10);
   return distance;
 }
@@ -190,12 +194,12 @@ void mfs() {
   }
 }
 
-const int csb_pin = 9;
+
 
 void setup(){
   Serial.begin(115200);
 
-  IrReceiver.begin(A0);
+  IrReceiver.begin(IRemotePin);
   
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
@@ -207,10 +211,12 @@ void setup(){
 
   pinMode(LeftCheckPin, INPUT);
   pinMode(RightCheckPin, INPUT);
-  pinMode(2, OUTPUT);
-  pinMode(3, INPUT);
+  pinMode(ChaoShengBoOutputPin, OUTPUT);
+  pinMode(ChaoShengBoInputPin, INPUT);
 
-  servo_9.attach(csb_pin);
+  pinMode(HumanDetectPin, INPUT);
+
+  servo_9.attach(ServoDuoJiPin);
   servo_9.write(90);
   delay(1000);
 }
