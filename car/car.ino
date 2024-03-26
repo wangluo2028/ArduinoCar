@@ -197,7 +197,7 @@ void mfs() {
 
 
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   IrReceiver.begin(IRemotePin);
   
@@ -223,6 +223,49 @@ void setup(){
 
 
 void loop(){
+    // check if we have bluetooth
+    char val = Serial.read();
+    Serial.write(val);
+    if (-1 != val) {
+      if ('w' == val)
+      {
+        Serial.println("go");
+        go();
+        delay(DelayTime);
+        stop();
+      }
+      else if ('a' ==val)
+      {
+        Serial.println("left");
+        left();  
+        delay(DelayTime);
+        stop();
+      }   
+      else if ('e' ==val)
+      {
+        Serial.println("stop");
+        stop();  
+        delay(DelayTime);
+        stop();
+      }
+      else if ('d' == val)
+      {
+        Serial.println("right");
+        right();  
+        delay(DelayTime);
+        stop();
+      }
+      else if ('s' == val)
+      {
+        Serial.println("back");
+        back();  
+        delay(DelayTime);
+        stop();
+      }
+      
+      return;
+    }
+  
     long curMode = -1;
     if (IrReceiver.decode()) 
     {
